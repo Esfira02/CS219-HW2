@@ -8,6 +8,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
@@ -129,6 +131,7 @@ fun NavHostScreen(viewModel: WeatherViewModel, context: Context) {
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.Start
                         ) {
+                            SettingsView()
 
                             if (gpsPermissionState.status.isGranted) {
 
@@ -145,12 +148,38 @@ fun NavHostScreen(viewModel: WeatherViewModel, context: Context) {
                                         modifier = Modifier.padding(bottom = 16.dp)
                                     )
 
+                                    // Show some attribute to the user, either of the following:
+                                    // 1) Humidity in %
+                                    // 2) Temperature in Celsius
+                                    // 3) Temperature in Fahrenheit
+                                    var attributeName: String = ""
+                                    var attributeValue: String = ""
+                                    var attributeUnit: String = ""
+
+                                    val tempUnitPreference by context.temperatureUnitFlow.collectAsState(initial = "C")
+
+                                    if (viewModel.userLocationWeather.value?.current?.temp_c != null
+                                        && tempUnitPreference == "C"
+                                    ) {
+                                        attributeName = "Weather"
+                                        attributeValue = viewModel.userLocationWeather.value?.current?.temp_c.toString()
+                                        attributeUnit = "°C"
+                                    } else if (viewModel.userLocationWeather.value?.current?.temp_f != null
+                                        && tempUnitPreference == "F"
+                                    ) {
+                                        attributeName = "Weather"
+                                        attributeValue = viewModel.userLocationWeather.value?.current?.temp_f.toString()
+                                        attributeUnit = "°F"
+                                    } else {
+                                        attributeName = "Humidity"
+                                        attributeValue = viewModel.userLocationWeather.value?.current?.humidity.toString()
+                                        attributeUnit = "%"
+                                    }
                                     Text(
-                                        text = "Weather - ${viewModel.userLocationWeather.value?.current}°C",
+                                        text = "${attributeName} - ${attributeValue}${attributeUnit}",
                                         modifier = Modifier.padding(bottom = 16.dp)
                                     )
                                 }
-
                             }
 
                             Text(
