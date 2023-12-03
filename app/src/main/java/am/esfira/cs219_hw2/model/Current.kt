@@ -1,4 +1,4 @@
-package am.esfira.cs219_hw2
+package am.esfira.cs219_hw2.model
 
 data class Current (
     val tempC: Float,
