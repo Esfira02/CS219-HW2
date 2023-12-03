@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">CS219_Weather</string>
-    <string name="api_key">66dbabef80414e2fb3974610231511</string>
 
     <string name="yerevan_name">Yerevan</string>
     <string name="yerevan_desc">Yerevan is the capital city of Armenia. It is one of the oldest cities in the world, having a beautiful heritage.</string>
