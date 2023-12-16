@@ -41,7 +41,7 @@ fun CityView(
         )
         Spacer(modifier = Modifier.height(15.dp))
         Text(
-            text = weatherResponse.current.tempC.toString()
+            text = weatherResponse.current.temp_c.toString()
                     + "°C - "
                     + weatherResponse.current.condition
         )
