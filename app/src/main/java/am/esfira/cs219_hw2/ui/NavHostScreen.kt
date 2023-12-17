@@ -50,8 +50,6 @@ fun NavHostScreen(viewModel: WeatherViewModel, context: Context) {
     CS219_HW2Theme {
 
         var gpsPermissionState = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
-        var lat by remember { mutableDoubleStateOf(0.0) }
-        var lng by remember { mutableDoubleStateOf(0.0) }
 
         val lifecycleOwner = LocalLifecycleOwner.current
         DisposableEffect(key1 = lifecycleOwner, effect = {
@@ -82,7 +80,6 @@ fun NavHostScreen(viewModel: WeatherViewModel, context: Context) {
                 )
             }
         } else {
-            // A surface container using the 'background' color from the theme
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
@@ -92,139 +89,16 @@ fun NavHostScreen(viewModel: WeatherViewModel, context: Context) {
                     composable(
                         route = "WelcomeScreen",
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Welcome to Our App",
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            Button(
-                                onClick = { navController.navigate(route = "ListScreen") },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                                modifier = Modifier
-                                    .width(256.dp)
-                                    .height(48.dp)
-
-                            ) {
-                                Text(
-                                    text = "Next",
-                                    color = Color.White
-                                )
-                            }
-                        }
+                        WelcomeScreenView(navController)
                     }
 
                     composable(
                         route = "ListScreen",
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .verticalScroll(rememberScrollState())
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Top,
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            SettingsView()
-
-                            if (gpsPermissionState.status.isGranted) {
-
-                                getCurrentLocation(LocalContext.current) { latParam, lngParam ->
-                                    lat = latParam
-                                    lng = lngParam
-
-                                    viewModel.updateCoordinates(latParam, lngParam)
-                                }
-
-                                if(viewModel.userLocationWeather.value != null) {
-                                    Text(
-                                        text = "User's coordinates - ${viewModel.userLocationWeather.value?.location?.name}",
-                                        modifier = Modifier.padding(bottom = 16.dp)
-                                    )
-
-                                    // Show some attribute to the user, either of the following:
-                                    // 1) Humidity in %
-                                    // 2) Temperature in Celsius
-                                    // 3) Temperature in Fahrenheit
-                                    var attributeName: String = ""
-                                    var attributeValue: String = ""
-                                    var attributeUnit: String = ""
-
-                                    val tempUnitPreference by context.temperatureUnitFlow.collectAsState(initial = "C")
-
-                                    if (viewModel.userLocationWeather.value?.current?.temp_c != null
-                                        && tempUnitPreference == "C"
-                                    ) {
-                                        attributeName = "Weather"
-                                        attributeValue = viewModel.userLocationWeather.value?.current?.temp_c.toString()
-                                        attributeUnit = "°C"
-                                    } else if (viewModel.userLocationWeather.value?.current?.temp_f != null
-                                        && tempUnitPreference == "F"
-                                    ) {
-                                        attributeName = "Weather"
-                                        attributeValue = viewModel.userLocationWeather.value?.current?.temp_f.toString()
-                                        attributeUnit = "°F"
-                                    } else {
-                                        attributeName = "Humidity"
-                                        attributeValue = viewModel.userLocationWeather.value?.current?.humidity.toString()
-                                        attributeUnit = "%"
-                                    }
-                                    Text(
-                                        text = "${attributeName} - ${attributeValue}${attributeUnit}",
-                                        modifier = Modifier.padding(bottom = 16.dp)
-                                    )
-                                }
-                            }
-
-                            Text(
-                                text = "List of cities",
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                            CityView(
-                                cityName = context.getString(R.string.yerevan_name),
-                                cityDesc = context.getString(R.string.yerevan_desc),
-                                cityImage = R.drawable.yerevan,
-                                weatherResponse = weatherData[0]
-                            )
-                            CityView(
-                                cityName = context.getString(R.string.rome_name),
-                                cityDesc = context.getString(R.string.rome_desc),
-                                cityImage = R.drawable.rome,
-                                weatherResponse = weatherData[1]
-                            )
-                            CityView(
-                                cityName = context.getString(R.string.bangkok_name),
-                                cityDesc = context.getString(R.string.bangkok_name),
-                                cityImage = R.drawable.bangkok,
-                                weatherResponse = weatherData[2]
-                            )
-                        }
+                        ListScreenView(viewModel, context, gpsPermissionState, weatherData)
                     }
                 }
             }
         }
     }
-}
-
-@SuppressLint("MissingPermission")
-private fun getCurrentLocation(context: Context, callback: (Double, Double) -> Unit) {
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    fusedLocationClient.lastLocation
-        .addOnSuccessListener { location ->
-            if (location != null) {
-                val lat = location.latitude
-                val long = location.longitude
-                callback(lat, long)
-            }
-        }
-        .addOnFailureListener { exception ->
-            // Handle location retrieval failure
-            exception.printStackTrace()
-        }
 }
